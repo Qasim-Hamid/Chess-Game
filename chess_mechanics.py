@@ -32,11 +32,11 @@ class Pawn(Piece):
 
         super().__init__(colour)
 
-    def move(self, row_index: int, clmn_index: int, board: 'Board'):
+    def move(self, old_position: tuple, new_position: tuple, board: 'Board') -> tuple:
 
-        new_position = (row_index, clmn_index)
-        board.update_board(self._position, new_position, self)
-        self._position = new_position
+        board.update_board(old_position, new_position, self)
+        old_position = new_position
+        return old_position
 
 
 class Rook(Piece):
@@ -46,11 +46,11 @@ class Rook(Piece):
 
         super().__init__(colour)
 
-    def move(self, row_index: int, clmn_index: int, board: 'Board'):
+    def move(self, old_position: tuple, new_position: tuple, board: 'Board') -> tuple:
 
-        new_position = (row_index, clmn_index)
-        board.update_board(self._position, new_position, self)
-        self._position = new_position
+        board.update_board(old_position, new_position, self)
+        old_position = new_position
+        return old_position
 
 
 class Bishop(Piece):
@@ -60,11 +60,12 @@ class Bishop(Piece):
 
         super().__init__(colour)
 
-    def move(self, row_index: int, clmn_index: int, board: 'Board'):
+    def move(self, old_position: tuple, new_position: tuple, board: 'Board') -> tuple:
 
-        new_position = (row_index, clmn_index)
-        board.update_board(self._position, new_position, self)
-        self._position = new_position
+        
+        board.update_board(old_position, new_position, self)
+        old_position = new_position
+        return old_position
 
 
 class Knight(Piece):
@@ -74,11 +75,12 @@ class Knight(Piece):
 
         super().__init__(colour)
 
-    def move(self, row_index: int, clmn_index: int, board: 'Board'):
+    def move(self, old_position: tuple, new_position: tuple, board: 'Board') -> tuple:
 
-        new_position = (row_index, clmn_index)
-        board.update_board(self._position, new_position, self)
-        self._position = new_position        
+        
+        board.update_board(old_position, new_position, self)
+        old_position = new_position
+        return old_position        
 
 
 class Queen(Piece):
@@ -88,11 +90,12 @@ class Queen(Piece):
 
         super().__init__(colour)
 
-    def move(self, row_index: int, clmn_index: int, board: 'Board'):
+    def move(self, old_position: tuple, new_position: tuple, board: 'Board') -> tuple:
 
-        new_position = (row_index, clmn_index)
-        board.update_board(self._position, new_position, self)
-        self._position = new_position
+        
+        board.update_board(old_position, new_position, self)
+        old_position = new_position
+        return old_position
 
 
 class King(Piece):
@@ -102,11 +105,12 @@ class King(Piece):
 
         super().__init__(colour)
 
-    def move(self, row_index: int, clmn_index: int, board: 'Board'):
+    def move(self, old_position: tuple, new_position: tuple, board: 'Board') -> tuple:
 
-        new_position = (row_index, clmn_index)
-        board.update_board(self._position, new_position, self)
-        self._position = new_position
+        
+        board.update_board(old_position, new_position, self)
+        old_position = new_position
+        return old_position
 
 
 class Empty(Piece):
@@ -116,11 +120,12 @@ class Empty(Piece):
 
         super().__init__(colour)
 
-    def move(self, row_index: int, clmn_index: int, board: 'Board'):
+    def move(self, old_position: tuple, new_position: tuple, board: 'Board') -> tuple:
 
-        new_position = (row_index, clmn_index)
-        board.update_board(self._position, new_position, self)
-        self._position = new_position
+        
+        board.update_board(old_position, new_position, self)
+        old_position = new_position
+        return old_position
 
 
 class Spot():
@@ -139,10 +144,14 @@ class Spot():
 
         return self._position
     
-    def move_piece(self, row_index: int, clmn_index: int, board: 'Board'):
+    def move_piece(self, new_position: tuple, board: 'Board'):
 
-        self._piece().move(row_index, clmn_index, board)
+        new_position = self._piece.move(self._position, new_position, board)
+        self._position = new_position
 
+    def update_piece(self, new_piece: Piece):
+
+        self._piece = new_piece
 
 
 class Board():
@@ -150,15 +159,15 @@ class Board():
     def __init__(self):
 
         
-        w_piece_list = {1:{1: Rook("White"), 2: Knight("White"), 3: Bishop("White"), 4: Queen("White"),
-                    5: King("White"), 6: Bishop("White"), 7: Knight("White"), 8: Rook("White")},
-                    2: {1: Pawn("White"), 2: Pawn("White"), 3: Pawn("White"), 4: Queen("White"),
-                    5: Pawn("White"), 6: Pawn("White"), 7: Pawn("White"), 8 :Pawn("White")}}
+        w_piece_list = {1: {1: Rook("White"), 2: Knight("White"), 3: Bishop("White"), 4: Queen("White"),
+                            5: King("White"), 6: Bishop("White"), 7: Knight("White"), 8: Rook("White")},
+                        2: {1: Pawn("White"), 2: Pawn("White"), 3: Pawn("White"), 4: Pawn("White"),
+                            5: Pawn("White"), 6: Pawn("White"), 7: Pawn("White"), 8 :Pawn("White")}}
         
-        b_piece_list = {7:{1:Pawn("Black"), 2: Pawn("Black"), 3: Pawn("Black"), 4: Pawn("Black"),
-                    5: Pawn("Black"), 6: Pawn("Black"), 7: Pawn("Black"), 8: Pawn("Black")},
-                    8: {1: Rook("Black"), 2: Knight("Black"), 3: Bishop("Black"), 4: Queen("Black"),
-                    5: King("Black"), 6: Bishop("Black"), 7: Knight("Black"), 8: Rook("Black")}}
+        b_piece_list = {7: {1:Pawn("Black"), 2: Pawn("Black"), 3: Pawn("Black"), 4: Pawn("Black"),
+                            5: Pawn("Black"), 6: Pawn("Black"), 7: Pawn("Black"), 8: Pawn("Black")},
+                        8: {1: Rook("Black"), 2: Knight("Black"), 3: Bishop("Black"), 4: Queen("Black"),
+                            5: King("Black"), 6: Bishop("Black"), 7: Knight("Black"), 8: Rook("Black")}}
 
         self._board = {}
 
@@ -191,18 +200,15 @@ class Board():
                         self._board[row_index][clmn_index] = Spot("Black", Empty('Blank'), row_index, clmn_index)
 
         
-    def update_board(self, current_position, new_position, piece_type: Piece):
+    def update_board(self, current_position, new_position, piece: Piece):
 
         prev_row_index = current_position[0]
         prev_clmn_index = current_position[1]
         new_row_index = new_position[0]
         new_clmn_index = new_position[1]
         
-        old_spot_colour = self._board[prev_row_index][prev_clmn_index].get_colour()
-        new_spot_colour = self._board[new_row_index][new_clmn_index].get_colour()
-
-        self._board[prev_clmn_index][prev_row_index] = Spot(old_spot_colour, None)
-        self._board[new_clmn_index][new_row_index] = Spot(new_spot_colour, piece_type)
+        self._board[prev_row_index][prev_clmn_index].update_piece(Empty('Blank'))
+        self._board[new_row_index][new_clmn_index].update_piece(piece)
 
 
     def print_board(self):
@@ -220,5 +226,9 @@ class Board():
 
 
 word = Board()
-word.get_spot(2, 3).move_piece(2, 4, word)
+
+word.get_spot(1, 1).move_piece((3, 3), word)
 word.print_board()
+#print("")
+#word.get_spot(3, 3).move_piece((4, 3), word)
+#word.print_board()
