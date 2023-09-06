@@ -317,7 +317,7 @@ class Bishop(Piece):
 
             if (negative_row_positive_clmn == True and check_in_range(old_posn, increment, 'negative', 'positive')):
 
-                new_spot = (old_posn[0] - increment, old_posn[1] - increment)
+                new_spot = (old_posn[0] - increment, old_posn[1] + increment)
                 negative_row_positive_clmn = board.check_spot_empty(new_spot)
 
                 if (negative_row_positive_clmn == False):
@@ -349,23 +349,25 @@ class Bishop(Piece):
                 negative_row_negative_clmn = False
 
             if ((positive_row_positive_clmn == False) and (positive_row_negative_clmn == False) and \
-                (negative_row_positive_clmn) == False and (negative_row_negative_clmn == False)):
+                (negative_row_positive_clmn == False) and (negative_row_negative_clmn == False)):
 
                 passing = False
 
-            for item in positive_row_positive_clmn_list:
-                combined_list.append(item)
+            increment += 1
 
-            for item in positive_row_negative_clmn_list:
-                combined_list.appeend(item)
+        for item in positive_row_positive_clmn_list:
+            combined_list.append(item)
 
-            for item in negative_row_positive_clmn_list:
-                combined_list.appened(item)
+        for item in positive_row_negative_clmn_list:
+            combined_list.append(item)
 
-            for item in negative_row_negative_clmn_list:
-                combined_list.append(item)
+        for item in negative_row_positive_clmn_list:
+            combined_list.append(item)
 
-            return combined_list
+        for item in negative_row_negative_clmn_list:
+            combined_list.append(item)
+
+        return combined_list
 
 
 class Knight(Piece):
@@ -380,7 +382,9 @@ class Knight(Piece):
         
         board.update_board(old_posn, new_posn, self)
         old_posn = new_posn
-        return old_posn        
+        return old_posn    
+    
+        
 
 
 class Queen(Piece):
@@ -542,8 +546,8 @@ class Board():
 
         for row_index in range(8, 0, -1):
             print("")
-            for clmn_index in range (1, 9, 1):
-                print(self._board[row_index][clmn_index].get_piece(), end=" ")
+            for clmn_index in range(1, 9, 1):
+                print("%10s" %self._board[row_index][clmn_index].get_piece(), end=" ")
 
     
     def get_spot(self, posn: tuple):
@@ -618,6 +622,7 @@ word.get_spot((2, 4)).move_piece(word)
 word.print_board()
 word.get_spot((1, 3)).move_piece(word)
 word.print_board()
+word.get_spot((4, 6)).move_piece(word)
 #print(word.get_spot((2, 1)).move_piece(word))
 #print("")
 #word.get_spot(3, 3).move_piece((4, 3), word)
