@@ -13,10 +13,11 @@ class Piece(ABC):
         return self._colour
 
 
-    @abstractmethod
-    def move(self):
-        #Moves piece based on what it is able to do
-        pass
+    def move(self, old_posn: tuple, new_posn: tuple, board: 'Board') -> tuple:
+
+        board.update_board(old_posn, new_posn, self)
+        old_posn = new_posn
+        return old_posn
 
     """@abstractmethod
     def potential_moves(self):
@@ -31,24 +32,22 @@ class Pawn(Piece):
         #Initializes pawn class using Piece constructor
 
         super().__init__(colour)
-
-    def potential_moves(self, old_posn: tuple, board: 'Board') -> list:
-
         self._moveList = []
-        new_spot_row = old_posn[0] + 1
-        new_spot_clmn = old_posn[1]
-        new_spot = (new_spot_row, new_spot_clmn)
 
-        if (board.check_spot_empty(new_spot) == True):
-            self._moveList.append(new_spot)
+    def get_colour(self) -> str:
 
-        return self._moveList
+        return self._colour
 
-    def move(self, old_posn: tuple, new_posn: tuple, board: 'Board') -> tuple:
+    def potential_moves(self, old_posn: tuple) -> list:
 
-        board.update_board(old_posn, new_posn, self)
-        old_posn = new_posn
-        return old_posn
+        if (self._colour == "White"):
+            self._moveList.append((old_posn[0] + 1, old_posn[1]))
+
+        else:
+            self._moveList.append((old_posn[0] + -1, old_posn[1]))
+
+        #Put list in a list to work with check_spots function in board class
+        return [self._moveList]
 
 
 class Rook(Piece):
@@ -57,157 +56,38 @@ class Rook(Piece):
         #Initializes pawn class using Piece constructor
 
         super().__init__(colour)
-
-    def move(self, old_posn: tuple, new_posn: tuple, board: 'Board') -> tuple:
-
-        board.update_board(old_posn, new_posn, self)
-        old_posn = new_posn
-        return old_posn
     
-    def potential_moves(self, old_posn: tuple, board: 'Board') -> list:
+    def potential_moves(self, old_posn: tuple) -> list:
 
-
-        combined_list = []
-        positive_y_list = []
-        positive_x_list = []
-        negative_y_list = []
-        negative_x_list = []
         
-        passing = True
+        potential_move_list = []
+        increment_list = [1, -1]
+        y, x = old_posn[0], old_posn[1]
+        axis_point_list = [x, y]
 
 
-        def check_in_range(old_posn: tuple, increment: int, row_or_clmn: str, positive_or_negative: str) -> bool:
+        for axis in axis_point_list:
+            initial_axis = axis 
 
-            if (row_or_clmn == 'row'):
+            for increment in increment_list:
+                sublist = []
+                axis += increment
 
-                if (positive_or_negative == 'positive'):
-                
-                    if (old_posn[0] + increment == 9):
-                        return False
-                    
-                    else:
-                        return True
-                    
-                elif (positive_or_negative == 'negative'):
+                while (axis < 9 and axis > 0):
 
-                    if (old_posn[0] - increment == 0):
-                        return False
-                    
-                    else:
-                        return True
+                    if initial_axis == x:
+                        sublist.append((y, axis))
 
-            elif (row_or_clmn == 'clmn'):
+                    elif initial_axis == y:
+                        sublist.append((axis, x))
 
-                if (positive_or_negative == 'positive'):
+                    axis += increment
 
-                    if (old_posn[1] + increment == 9):
-                        return False
-                    
-                    else:
-                        return True
-                
-                elif (positive_or_negative == 'negative'):
+                potential_move_list.append(sublist)
+                axis = initial_axis
 
-                    if (old_posn[1] - increment == 0):
-                        return False
-                    
-                    else:
-                        return True
-
-
-        increment = 1
-
-        positive_y = True
-        positive_x = True
-        negative_y = True
-        negative_x = True
-
-        while (passing == True):
-
-
-            if (positive_y == True and check_in_range(old_posn, increment, 'row', 'positive')):
-
-                new_spot = (old_posn[0] + increment, old_posn[1])
-                positive_y = board.check_spot_empty(new_spot)
-
-                if (positive_y == False):
-
-                    if not(board.same_piece_colour(new_spot, self._colour)):
-                        positive_y_list.append(new_spot)
-
-                else:
-                    positive_y_list.append(new_spot)
-
-            elif (positive_y == True):
-                positive_y = False
-
-            if (positive_x == True and check_in_range(old_posn, increment, 'clmn', 'positive')):
-                
-                new_spot = (old_posn[0], old_posn[1] + increment)
-                positive_x = board.check_spot_empty(new_spot)
-
-                if (positive_x == False):
-
-                    if not(board.same_piece_colour(new_spot, self._colour)):
-                        positive_x_list.append(new_spot)
-
-                else:
-                    positive_x_list.append(new_spot)
-
-            elif (positive_x == True):
-                positive_x = False
-
-            if (negative_y == True and check_in_range(old_posn, increment, 'row', 'negative')):
-
-                new_spot = (old_posn[0] - increment, old_posn[1])
-                negative_y = board.check_spot_empty(new_spot)
-                
-                if (negative_y == False):
-                    
-                    if not(board.same_piece_colour(new_spot, self._colour)):
-                        negative_y_list.append(new_spot)
-
-                else:
-                    negative_y_list.append(new_spot)
-
-            elif (negative_y == True):
-                negative_y = False
-
-            if (negative_x == True and check_in_range(old_posn, increment, 'clmn', 'negative')):
-
-                new_spot = (old_posn[0], old_posn[1] - increment)
-                negative_x = board.check_spot_empty(new_spot)
-                
-                if (negative_x == False):
-                    
-                    if not(board.same_piece_colour(new_spot, self._colour)):
-                        negative_x_list.append(new_spot)
-
-                else:
-                    negative_x_list.append(new_spot)
-
-            elif (negative_x == True):
-                negative_x = False
-
-            if ((positive_y == False) and (positive_x == False) and (negative_y == False) and (negative_x == False)):
-                passing = False
-
-            increment += 1
-
-        for item in positive_y_list:
-            combined_list.append(item)
-
-        for item in positive_x_list:
-            combined_list.append(item)
-
-        for item in negative_y_list:
-            combined_list.append(item)
-
-        for item in negative_x_list:
-            combined_list.appeed(item)
-
-        return combined_list
-
+        return potential_move_list        
+                            
 
 class Bishop(Piece):
 
@@ -216,158 +96,28 @@ class Bishop(Piece):
 
         super().__init__(colour)
 
-    def move(self, old_posn: tuple, new_posn: tuple, board: 'Board') -> tuple:
+    def potential_moves(self, old_posn) -> list:
 
-        
-        board.update_board(old_posn, new_posn, self)
-        old_posn = new_posn
-        return old_posn
-    
-    def potential_moves(self, old_posn: tuple, board: 'Board') -> list:
+        increment_list = [1, -1]
+        y, x = old_posn[0], old_posn[1]
+        potential_move_list = []
 
+        for increment_y in increment_list:
+            for increment_x in increment_list:
 
-        combined_list = []
-        positive_row_positive_clmn_list = []
-        positive_row_negative_clmn_list = []
-        negative_row_positive_clmn_list = []    
-        negative_row_negative_clmn_list = []
-        
-        passing = True
+                sublist = []
+                new_spot = (y + increment_y, x + increment_x)
 
-        def check_in_range(old_posn: tuple, increment: int, positive_row_or_negative_row: str, positive_clmn_or_negative_clmn: str) -> bool:
-
-            if (positive_row_or_negative_row == 'positive'):
-
-                if (positive_clmn_or_negative_clmn == 'positive'):
-                
-                    if ((old_posn[0] + increment == 9)  or (old_posn[1] + increment) == 9):
-                        return False
+                while (new_spot[0] < 9 and new_spot[0] > 0 and
+                       new_spot[1] < 9 and new_spot[1] > 0):
                     
-                    else:
-                        return True
-                    
-                elif (positive_clmn_or_negative_clmn == 'negative'):
+                    sublist.append(new_spot)
+                    new_spot = (new_spot[0] + increment_y, \
+                                new_spot[1] + increment_x)
+            
+                potential_move_list.append(sublist)
 
-                    if ((old_posn[0] + increment == 9)  or (old_posn[1] - increment) == 0):
-                        return False
-                    
-                    else:
-                        return True
-
-            elif (positive_row_or_negative_row == 'negative'):
-
-                if (positive_clmn_or_negative_clmn == 'positive'):
-
-                    if ((old_posn[0] - increment == 0)  or (old_posn[1] + increment) == 9):
-                        return False
-                    
-                    else:
-                        return True
-                
-                elif (positive_clmn_or_negative_clmn == 'negative'):
-
-                    if ((old_posn[0] - increment == 0)  or (old_posn[1] - increment) == 0):
-                        return False
-                    
-                    else:
-                        return True  
-
-        increment = 1
-
-        positive_row_positive_clmn = True
-        positive_row_negative_clmn = True
-        negative_row_positive_clmn = True
-        negative_row_negative_clmn = True
-
-        while (passing == True):
-
-
-            if (positive_row_positive_clmn == True and check_in_range(old_posn, increment, 'positive', 'positive')):
-
-                new_spot = (old_posn[0] + increment, old_posn[1] + increment)
-                positive_row_positive_clmn = board.check_spot_empty(new_spot)
-
-                if (positive_row_positive_clmn == False):
-
-                    if not (board.same_piece_colour(new_spot, self._colour)):
-                        positive_row_positive_clmn_list.append(new_spot)
-
-                else:
-                    positive_row_positive_clmn_list.append(new_spot)
-
-            elif (positive_row_positive_clmn == True):
-                positive_row_positive_clmn = False  
-
-            if (positive_row_negative_clmn == True and check_in_range(old_posn, increment, 'positive', 'negative')):
-
-                new_spot = (old_posn[0] + increment, old_posn[1] - increment)
-                positive_row_negative_clmn = board.check_spot_empty(new_spot)
-
-                if (positive_row_negative_clmn == False):
-
-                    if not (board.same_piece_colour(new_spot, self._colour)):
-                        positive_row_negative_clmn_list.append(new_spot)
-
-                else:
-                    positive_row_negative_clmn_list.append(new_spot)
-
-            elif (positive_row_negative_clmn == True):
-                positive_row_negative_clmn = False 
-
-
-            if (negative_row_positive_clmn == True and check_in_range(old_posn, increment, 'negative', 'positive')):
-
-                new_spot = (old_posn[0] - increment, old_posn[1] + increment)
-                negative_row_positive_clmn = board.check_spot_empty(new_spot)
-
-                if (negative_row_positive_clmn == False):
-
-                    if not (board.same_piece_colour(new_spot, self._colour)):
-                        negative_row_positive_clmn_list.append(new_spot)
-
-                else:
-                    negative_row_positive_clmn_list.append(new_spot)
-
-            elif (negative_row_positive_clmn == True):
-                negative_row_positive_clmn = False
-
-
-            if (negative_row_negative_clmn == True and check_in_range(old_posn, increment, 'negative', 'negative')):
-
-                new_spot = (old_posn[0] - increment, old_posn[1] - increment)
-                negative_row_negative_clmn = board.check_spot_empty(new_spot)
-
-                if (negative_row_negative_clmn == False):
-
-                    if not (board.same_piece_colour(new_spot, self._colour)):
-                        negative_row_negative_clmn_list.append(new_spot)
-
-                else:
-                    negative_row_negative_clmn_list.append(new_spot)
-
-            elif (negative_row_negative_clmn == True):
-                negative_row_negative_clmn = False
-
-            if ((positive_row_positive_clmn == False) and (positive_row_negative_clmn == False) and \
-                (negative_row_positive_clmn == False) and (negative_row_negative_clmn == False)):
-
-                passing = False
-
-            increment += 1
-
-        for item in positive_row_positive_clmn_list:
-            combined_list.append(item)
-
-        for item in positive_row_negative_clmn_list:
-            combined_list.append(item)
-
-        for item in negative_row_positive_clmn_list:
-            combined_list.append(item)
-
-        for item in negative_row_negative_clmn_list:
-            combined_list.append(item)
-
-        return combined_list
+        return potential_move_list
 
 
 class Knight(Piece):
@@ -375,16 +125,32 @@ class Knight(Piece):
     def __init__(self, colour: str):
         #Initializes pawn class using Piece constructor
 
-        super().__init__(colour)
-
-    def move(self, old_posn: tuple, new_posn: tuple, board: 'Board') -> tuple:
-
-        
-        board.update_board(old_posn, new_posn, self)
-        old_posn = new_posn
-        return old_posn    
+        super().__init__(colour) 
     
         
+    def potential_moves(self, old_posn: tuple) -> list:
+
+        long_increment_list = [2, -2]
+        short_increment_list = [1, -1]
+        increment_cycle_list = [long_increment_list, short_increment_list]
+        list_index = 1
+        potential_move_list = []
+
+        for index in range(2): 
+
+            #increment_y is long_increment_list in first loop, then short_increment_list in second loop
+            for increment_y in increment_cycle_list[index - 1]:
+
+                for increment_x in increment_cycle_list[index]:
+
+                    sublist = []
+                    new_spot = (old_posn[0] + increment_y, old_posn[1] + increment_x)
+                    if (new_spot[0] < 9 and new_spot[0] > 0 and new_spot[1] < 9 and new_spot[1] > 0):
+                        sublist.append(new_spot)
+
+                    potential_move_list.append(sublist)
+
+        return potential_move_list
 
 
 class Queen(Piece):
@@ -394,12 +160,53 @@ class Queen(Piece):
 
         super().__init__(colour)
 
-    def move(self, old_posn: tuple, new_posn: tuple, board: 'Board') -> tuple:
+    def potential_moves(self, old_spot: tuple):
 
-        
-        board.update_board(old_posn, new_posn, self)
-        old_posn = new_posn
-        return old_posn
+
+        potential_move_list = []
+        increment_list = [1, -1]
+        y, x = old_spot[0], old_spot[1]
+        axis_point_list = [x, y]
+
+
+        for axis in axis_point_list:
+            initial_axis = axis 
+
+            for increment in increment_list:
+                sublist = []
+                axis += increment
+
+                while (axis < 9 and axis > 0):
+
+                    if initial_axis == x:
+                        sublist.append((y, axis))
+
+                    elif initial_axis == y:
+                        sublist.append((axis, x))
+
+                    axis += increment
+
+                potential_move_list.append(sublist)
+                axis = initial_axis
+
+        y, x = old_spot[0], old_spot[1]
+
+        for increment_y in increment_list:
+            for increment_x in increment_list:
+
+                sublist = []
+                new_spot = (y + increment_y, x + increment_x)
+
+                while (new_spot[0] < 9 and new_spot[0] > 0 and
+                       new_spot[1] < 9 and new_spot[1] > 0):
+                    
+                    sublist.append(new_spot)
+                    new_spot = (new_spot[0] + increment_y, \
+                                new_spot[1] + increment_x)
+            
+                potential_move_list.append(sublist)
+
+        return potential_move_list
 
 
 class King(Piece):
@@ -409,12 +216,25 @@ class King(Piece):
 
         super().__init__(colour)
 
-    def move(self, old_posn: tuple, new_posn: tuple, board: 'Board') -> tuple:
+    def potential_moves(self, old_spot: tuple) -> list: 
 
-        
-        board.update_board(old_posn, new_posn, self)
-        old_posn = new_posn
-        return old_posn
+        potential_moves_list = []
+        iterator_list = [0, 1, -1]
+
+        for i in range(3):
+            for j in range(3):
+
+                new_spot = (old_spot[0] + iterator_list[i], old_spot[1] + iterator_list[j])
+
+                if (new_spot != old_spot and new_spot[0] != 9 and \
+                    new_spot[1] != 9 and new_spot[0] != 0 and new_spot[1] != 0):
+
+                    sublist = []
+                    sublist.append(new_spot)
+                    potential_moves_list.append(sublist)
+
+        return potential_moves_list
+
 
 
 class Empty(Piece):
@@ -423,13 +243,6 @@ class Empty(Piece):
         #Initializes pawn class using Piece constructor
 
         super().__init__(colour)
-
-    def move(self, old_posn: tuple, new_posn: tuple, board: 'Board') -> tuple:
-
-        
-        board.update_board(old_posn, new_posn, self)
-        old_posn = new_posn
-        return old_posn
 
     def potential_moves(self, old_posn: tuple, board: 'Board') -> list:
 
@@ -451,26 +264,27 @@ class Spot():
     def get_posn(self) -> tuple:
 
         return self._posn
-    
 
     def potential_moves(self, board: 'Board') -> list:
 
-        return self._piece.potential_moves(self._posn, board)
+        return self._piece.potential_moves(self._posn)
 
     def move_piece(self, board: 'Board') -> bool:
 
-        listMoves = self.potential_moves(board)
+        potential_moves = self.potential_moves(board)
+        colour = self.get_piece_colour()
+        move_list = board.check_spots(colour, potential_moves)
         
-        if listMoves == []:
+        if move_list == []:
             return False
         
         else:
-            print(listMoves)
+            print(move_list)
             index = input("Enter index of input: ")
             
-            new_posn = self._piece.move(self._posn, listMoves[int(index)], board)
-            self._posn = new_posn
-            return True  
+            
+            old_spot = self._piece.move(self._posn, move_list[int(index)], board)
+            return True 
 
     def update_piece(self, new_piece: Piece):
 
@@ -489,11 +303,11 @@ class Board():
         w_piece_list = {1: {1: Rook("White"), 2: Knight("White"), 3: Bishop("White"),
                             4: Queen("White"), 5: King("White"), 6: Bishop("White"),
                             7: Knight("White"), 8: Rook("White")},   
-                        2: {1: Rook("White"), 2: Pawn("White"), 3: Pawn("White"),
+                        2: {1: Pawn("White"), 2: Pawn("White"), 3: Pawn("White"),
                             4: Pawn("White"), 5: Pawn("White"), 6: Pawn("White"),
                             7: Pawn("White"), 8 :Pawn("White")}}
         
-        b_piece_list = {7: {1:Rook("Black"), 2: Pawn("Black"), 3: Pawn("Black"),
+        b_piece_list = {7: {1: Pawn("Black"), 2: Pawn("Black"), 3: Pawn("Black"),
                             4: Pawn("Black"), 5: Pawn("Black"), 6: Pawn("Black"),
                             7: Pawn("Black"), 8: Pawn("Black")},
                         8: {1: Rook("Black"), 2: Knight("Black"), 3: Bishop("Black"),
@@ -549,7 +363,8 @@ class Board():
             for clmn_index in range(1, 9, 1):
                 print("%10s" %self._board[row_index][clmn_index].get_piece(), end=" ")
 
-    
+        print("")
+
     def get_spot(self, posn: tuple):
 
         return self._board[posn[0]][posn[1]]
@@ -575,13 +390,52 @@ class Board():
         
     def check_spots(self, piece_colour: str, spot_list: list):
 
-        for spot in spot_list:
+        #Check if list has anything in it, if not return
+        #Check if spot is empty
+        # -> Pass if it is, continue iterating
+        #If Not
+        # -> Check if spot has piece with same colour
+        # -> -> Pass if it is, stop iterating through list
+        # -> -> if it is not stop iterating through list and dont add piece 
 
-            if (self.check_piece_colour(spot) != piece_colour):
-                spot_list.remove(spot)
-                    
+        available_moves = []
+
+
+        for list in spot_list:
+
+            if len(list) == 0:
+                pass
+                
             else:
-                return False
+
+                list_end = False
+                list_index = 0
+                list_len = len(list)
+                
+                while (list_end == False):
+                    current_spot = list[list_index]
+
+                    #Case 1: spot is empty, continue iterating
+                    if self.check_spot_empty(current_spot) == True:
+                        available_moves.append(current_spot)
+
+                    #Case 2: spot is taken by piece of same colour, stop iterating, don't add to list
+                    elif self.check_piece_colour(current_spot) == piece_colour:
+                        list_end = True
+
+                    #Case 3: Spot is taken by piece of different colour, add to list, stop iterating
+                    else:
+                        available_moves.append(current_spot)
+                        list_end = True
+
+                    list_index += 1
+
+                    #Check if end of list
+                    if list_len == list_index:
+                        list_end = True
+
+        return available_moves
+
                 
         
 
@@ -592,7 +446,7 @@ class Board():
             return piece_colour
 
 
-    def same_piece_colour(self, new_posn, colour) -> str:
+    def same_piece_colour(self, new_posn, colour) -> bool:
 
         if (self.check_spot_empty(new_posn) == False):
             piece_colour = self.get_spot(new_posn).get_piece_colour()
@@ -601,28 +455,56 @@ class Board():
             else:
                 return False
             
-
+    
+            
 
 word = Board()
-print()
-#word.get_spot(1, 1).move_piece((3, 3), word)
-#word.print_board()
-#print(word.get_spot((2, 1)))
-#word.print_board()
-#print()
-word.print_board()
 
-print("")
-
-#word.get_spot((8, 1)).move_piece(word)
+'''
+#Knight test
+word.get_spot((1, 2)).move_piece(word)
 word.print_board()
-print("")
-print("")
+word.get_spot((3, 3)).move_piece(word)
+word.print_board()
+'''
+
+'''
+#Bishop test
 word.get_spot((2, 4)).move_piece(word)
 word.print_board()
 word.get_spot((1, 3)).move_piece(word)
 word.print_board()
+word.get_spot((2, 4)).move_piece(word)
+word.print_board()
+'''
+
+'''
+#Black Pawn and rook test
+word.get_spot((7, 1)).move_piece(word)
+word.print_board()
+word.get_spot((8, 1)).move_piece(word)
+word.print_board()
+print("")
+print(word.get_spot((7, 1)).get_piece())
+word.get_spot((7, 1)).move_piece(word)
+word.print_board()
+'''
+
+'''
+#Queen Test
+word.get_spot((2, 4)).move_piece(word)
+word.print_board()
+word.get_spot((1, 4)).move_piece(word)
+word.print_board()
+word.get_spot((2, 4)).move_piece(word)
+word.print_board()
 word.get_spot((4, 6)).move_piece(word)
-#print(word.get_spot((2, 1)).move_piece(word))
-#print("")
-#word.get_spot(3, 3).move_piece((4, 3), word)
+'''
+
+#King Test
+word.get_spot((2, 5)).move_piece(word)
+word.print_board()
+word.get_spot((1, 5)).move_piece(word)
+word.print_board()
+word.get_spot((2, 5)).move_piece(word)
+word.print_board()
